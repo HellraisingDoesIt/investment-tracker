@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Tracker de Inversiones - Versión Local</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 0 15px;
+      background-color: #000000;
+      color: #e5e7eb;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .subtitulo {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #9ca3af;
+      margin-bottom: 20px;
+    }
+
+    .tarjeta {
+      background-color: #1a1a1a;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.8);
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #4b5563;
+      background-color: #0a0a0a;
+      color: #e5e7eb;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+
+    .fila {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .col {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 16px;
+      background-color: #3b82f6;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #2563eb;
+    }
+
+    button.btn-secondary {
+      background-color: #4b5563;
+      color: #e5e7eb;
+    }
+
+    button.btn-secondary:hover {
+      background-color: #6b7280;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.85rem;
+    }
+
+    th, td {
+      border: 1px solid #4b5563;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #0a0a0a;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #0a0a0a;
+    }
+
+    tbody tr:hover {
+      background-color: #2a2a2a;
+    }
+
+    .ticker-link {
+      color: #3b82f6;
+      cursor: pointer;
+      text-decoration: underline;
+      font-weight: bold;
+    }
+
+    .ticker-link:hover {
+      color: #60a5fa;
+    }
+
+    .resumen {
+      margin-top: 15px;
+      font-size: 0.95rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      background-color: #2a2a2a;
+      color: #e5e7eb;
+    }
+
+    /* Undo notification bar */
+    .undo-bar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #1a1a1a;
+      border: 2px solid #3b82f6;
+      padding: 12px 20px;
+      border-radius: 8px;
+      display: none;
+      align-items: center;
+      gap: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+      z-index: 1000;
+    }
+
+    .undo-bar.visible {
+      display: flex;
+    }
+
+    .undo-bar .mensaje {
+      color: #e5e7eb;
+      font-size: 0.9rem;
+    }
+
+    .undo-bar button {
+      margin: 0;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+    }
+
+    /* Modal for ticker details */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.85);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal-content {
+      background-color: #1a1a1a;
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 0 30px rgba(0,0,0,0.9);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #3b82f6;
+      padding-bottom: 10px;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      color: #3b82f6;
+    }
+
+    .modal-close {
+      background-color: transparent;
+      color: #e5e7eb;
+      border: 1px solid #4b5563;
+      padding: 4px 10px;
+      margin: 0;
+      cursor: pointer;
+      font-size: 1.2rem;
+      border-radius: 4px;
+    }
+
+    .modal-close:hover {
+      background-color: #4b5563;
+    }
+
+    .detalle-compra {
+      background-color: #0a0a0a;
+      border-left: 3px solid #3b82f6;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 4px;
+    }
+
+    .detalle-compra p {
+      margin: 5px 0;
+      font-size: 0.9rem;
+    }
+
+    .detalle-resumen {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #2a2a2a;
+      border-radius: 4px;
+    }
+
+    .detalle-resumen h3 {
+      margin-top: 0;
+      color: #3b82f6;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tracker de Inversiones (Local)</h1>
+  <p class="subtitulo">
+    v1.2 - Datos guardados en tu navegador. Más adelante lo conectamos a la nube.
+  </p>
+
+  <div class="tarjeta">
+    <h2>Agregar inversión</h2>
+    <div class="fila">
+      <div class="col">
+        <label for="ticker">Ticker / Nombre</label>
+        <input id="ticker" type="text" placeholder="Ej: AAPL, NVDA, BTC">
+      </div>
+
+      <div class="col">
+        <label for="cantidad">Cantidad de unidades</label>
+        <input id="cantidad" type="number" min="0" step="0.0001" placeholder="Ej: 10">
+      </div>
+
+      <div class="col">
+        <label for="precio_compra">Precio por unidad (compra)</label>
+        <input id="precio_compra" type="number" min="0" step="0.0001" placeholder="Ej: 150.50">
+      </div>
+    </div>
+
+    <div class="fila">
+      <div class="col">
+        <label for="fecha_compra">Fecha de compra</label>
+        <input id="fecha_compra" type="date">
+      </div>
+
+      <div class="col">
+        <label for="nota">Nota (opcional)</label>
+        <input id="nota" type="text" placeholder="Ej: L/P largo plazo, sector tech, etc.">
+      </div>
+    </div>
+
+    <button id="btn_agregar">Agregar inversión</button>
+  </div>
+
+  <div class="tarjeta">
+    <h2>Tus posiciones</h2>
+    <p class="resumen">
+      Total invertido: <span id="total_invertido" class="badge">$0</span>
+      &nbsp; | &nbsp;
+      Número de posiciones: <span id="total_posiciones" class="badge">0</span>
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Cantidad</th>
+          <th>Precio compra</th>
+          <th>Precio promedio</th>
+          <th>Total invertido</th>
+          <th>Fecha</th>
+          <th>Nota</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla_inversiones">
+        <!-- Filas se generan con JavaScript -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Undo notification bar -->
+  <div class="undo-bar" id="undo_bar">
+    <span class="mensaje" id="undo_mensaje"></span>
+    <button id="btn_deshacer">Deshacer</button>
+  </div>
+
+  <!-- Modal for ticker details -->
+  <div class="modal-overlay" id="modal_detalle">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal_titulo"></h2>
+        <button class="modal-close" id="btn_cerrar_modal">✕</button>
+      </div>
+      <div id="modal_body">
+        <!-- Content generated by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const KEY_STORAGE = "tracker_inversiones_v1";
+
+    // Form inputs
+    const inputTicker = document.getElementById("ticker");
+    const inputCantidad = document.getElementById("cantidad");
+    const inputPrecioCompra = document.getElementById("precio_compra");
+    const inputFechaCompra = document.getElementById("fecha_compra");
+    const inputNota = document.getElementById("nota");
+    const btnAgregar = document.getElementById("btn_agregar");
+
+    // Table and summary
+    const cuerpoTabla = document.getElementById("tabla_inversiones");
+    const spanTotalInvertido = document.getElementById("total_invertido");
+    const spanTotalPosiciones = document.getElementById("total_posiciones");
+
+    // Undo bar
+    const undoBar = document.getElementById("undo_bar");
+    const undoMensaje = document.getElementById("undo_mensaje");
+    const btnDeshacer = document.getElementById("btn_deshacer");
+
+    // Modal
+    const modalDetalle = document.getElementById("modal_detalle");
+    const modalTitulo = document.getElementById("modal_titulo");
+    const modalBody = document.getElementById("modal_body");
+    const btnCerrarModal = document.getElementById("btn_cerrar_modal");
+
+    let inversiones = [];
+    let itemEliminado = null;
+    let timerUndo = null;
+
+    // Load from localStorage
+    function cargarDesdeLocalStorage() {
+      const datos = localStorage.getItem(KEY_STORAGE);
+      if (!datos) {
+        inversiones = [];
+        return;
+      }
+
+      try {
+        inversiones = JSON.parse(datos);
+      } catch (error) {
+        console.error("Error al leer localStorage:", error);
+        inversiones = [];
+      }
+    }
+
+    // Save to localStorage
+    function guardarEnLocalStorage() {
+      localStorage.setItem(KEY_STORAGE, JSON.stringify(inversiones));
+    }
+
+    // Format currency
+    function formatearMoneda(valor) {
+      return "$" + valor.toFixed(2);
+    }
+
+    // Calculate average price per ticker
+    function calcularPrecioPromedio(ticker) {
+      const comprasTicker = inversiones.filter(inv => inv.ticker === ticker);
+      
+      if (comprasTicker.length === 0) return 0;
+      
+      let totalShares = 0;
+      let totalInvertido = 0;
+      
+      comprasTicker.forEach(compra => {
+        totalShares += compra.cantidad;
+        totalInvertido += (compra.cantidad * compra.precio_compra);
+      });
+      
+      return totalInvertido / totalShares;
+    }
+
+    // Render table
+    function renderizarTabla() {
+      cuerpoTabla.innerHTML = "";
+
+      let totalInvertido = 0;
+
+      inversiones.forEach((inv, indice) => {
+        const fila = document.createElement("tr");
+
+        const totalPorPosicion = inv.cantidad * inv.precio_compra;
+        totalInvertido += totalPorPosicion;
+        
+        const precioPromedio = calcularPrecioPromedio(inv.ticker);
+
+        fila.innerHTML = `
+          <td>
+            <span class="ticker-link" onclick="mostrarDetalleTicker('${inv.ticker}')">${inv.ticker}</span>
+          </td>
+          <td>${inv.cantidad}</td>
+          <td>${formatearMoneda(inv.precio_compra)}</td>
+          <td>${formatearMoneda(precioPromedio)}</td>
+          <td>${formatearMoneda(totalPorPosicion)}</td>
+          <td>${inv.fecha_compra || "-"}</td>
+          <td>${inv.nota || "-"}</td>
+          <td>
+            <button class="btn-secondary" onclick="eliminarInversion(${indice})">
+              Eliminar
+            </button>
+          </td>
+        `;
+
+        cuerpoTabla.appendChild(fila);
+      });
+
+      spanTotalInvertido.textContent = formatearMoneda(totalInvertido);
+      spanTotalPosiciones.textContent = inversiones.length.toString();
+    }
+
+    // Clear form
+    function limpiarFormulario() {
+      inputTicker.value = "";
+      inputCantidad.value = "";
+      inputPrecioCompra.value = "";
+      inputFechaCompra.value = "";
+      inputNota.value = "";
+    }
+
+    // Add investment
+    function agregarInversion() {
+      const ticker = inputTicker.value.trim().toUpperCase();
+      const cantidad = parseFloat(inputCantidad.value);
+      const precio = parseFloat(inputPrecioCompra.value);
+      const fecha = inputFechaCompra.value;
+      const nota = inputNota.value.trim();
+
+      if (!ticker || isNaN(cantidad) || isNaN(precio)) {
+        alert("Por favor completa al menos: ticker, cantidad y precio de compra.");
+        return;
+      }
+
+      const nueva = {
+        ticker: ticker,
+        cantidad: cantidad,
+        precio_compra: precio,
+        fecha_compra: fecha,
+        nota: nota
+      };
+
+      inversiones.push(nueva);
+      guardarEnLocalStorage();
+      renderizarTabla();
+      limpiarFormulario();
+    }
+
+    // Delete investment with undo
+    function eliminarInversion(indice) {
+      itemEliminado = {
+        item: inversiones[indice],
+        indice: indice
+      };
+
+      inversiones.splice(indice, 1);
+      guardarEnLocalStorage();
+      renderizarTabla();
+
+      mostrarUndo();
+    }
+
+    // Show undo bar
+    function mostrarUndo() {
+      if (!itemEliminado) return;
+
+      undoMensaje.textContent = `${itemEliminado.item.ticker} eliminado`;
+      undoBar.classList.add("visible");
+
+      // Clear previous timer
+      if (timerUndo) clearTimeout(timerUndo);
+
+      // Auto-hide after 10 seconds
+      timerUndo = setTimeout(() => {
+        ocultarUndo();
+        itemEliminado = null;
+      }, 10000);
+    }
+
+    // Hide undo bar
+    function ocultarUndo() {
+      undoBar.classList.remove("visible");
+      if (timerUndo) clearTimeout(timerUndo);
+    }
+
+    // Restore deleted item
+    function deshacerEliminacion() {
+      if (!itemEliminado) return;
+
+      inversiones.splice(itemEliminado.indice, 0, itemEliminado.item);
+      guardarEnLocalStorage();
+      renderizarTabla();
+
+      itemEliminado = null;
+      ocultarUndo();
+    }
+
+    // Show ticker detail modal
+    function mostrarDetalleTicker(ticker) {
+      const comprasTicker = inversiones.filter(inv => inv.ticker === ticker);
+
+      if (comprasTicker.length === 0) return;
+
+      modalTitulo.textContent = `Detalle: ${ticker}`;
+
+      let totalShares = 0;
+      let totalInvertido = 0;
+
+      let html = "";
+
+      comprasTicker.forEach((compra, idx) => {
+        const totalCompra = compra.cantidad * compra.precio_compra;
+        totalShares += compra.cantidad;
+        totalInvertido += totalCompra;
+
+        html += `
+          <div class="detalle-compra">
+            <p><strong>Compra ${idx + 1}</strong></p>
+            <p>Cantidad: ${compra.cantidad}</p>
+            <p>Precio unitario: ${formatearMoneda(compra.precio_compra)}</p>
+            <p>Total invertido: ${formatearMoneda(totalCompra)}</p>
+            <p>Fecha: ${compra.fecha_compra || "Sin fecha"}</p>
+            <p>Nota: ${compra.nota || "Sin nota"}</p>
+          </div>
+        `;
+      });
+
+      const precioPromedio = totalInvertido / totalShares;
+
+      html += `
+        <div class="detalle-resumen">
+          <h3>Resumen Total</h3>
+          <p><strong>Total de unidades:</strong> ${totalShares.toFixed(4)}</p>
+          <p><strong>Precio promedio de compra:</strong> ${formatearMoneda(precioPromedio)}</p>
+          <p><strong>Total invertido en ${ticker}:</strong> ${formatearMoneda(totalInvertido)}</p>
+          <p><strong>Número de compras:</strong> ${comprasTicker.length}</p>
+        </div>
+      `;
+
+      modalBody.innerHTML = html;
+      modalDetalle.classList.add("visible");
+    }
+
+    // Close modal
+    function cerrarModal() {
+      modalDetalle.classList.remove("visible");
+    }
+
+    // Event listeners
+    btnAgregar.addEventListener("click", agregarInversion);
+    btnDeshacer.addEventListener("click", deshacerEliminacion);
+    btnCerrarModal.addEventListener("click", cerrarModal);
+
+    // Close modal when clicking outside
+    modalDetalle.addEventListener("click", (e) => {
+      if (e.target === modalDetalle) {
+        cerrarModal();
+      }
+    });
+
+    // Initial load
+    cargarDesdeLocalStorage();
+    renderizarTabla();
+  </script>
+</body>
+</html>
